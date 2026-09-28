@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="环保设备采购比选工具：成本测算、供应商评分与风险跟进。">
+  <title>EnviroProcure · 环保采购比选</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script defer src="assets/engine.js"></script>
+  <script defer src="assets/demo.js"></script>
+  <script defer src="assets/app.js"></script>
+</head>
+<body>
+  <aside class="sidebar no-print">
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">e<span>p</span></span><span>EnviroProcure<small>环保采购 · 决策有据</small></span></a>
+    <div class="nav-label">WORKSPACE</div>
+    <nav aria-label="页面导航">
+      <a href="#overview" class="nav-primary"><span>01</span> 比选总览</a>
+      <a href="#settings"><span>02</span> 项目与口径</a>
+      <a href="#suppliers"><span>03</span> 供应商资料</a>
+      <a href="#method"><span>04</span> 计算方法</a>
+    </nav>
+    <div class="sidebar-bottom"><span class="status-dot"></span> 本地运行<small>数据保存在当前浏览器。<br>导出 JSON 可备份或迁移。</small><span class="version">v0.1.0 · MIT License</span></div>
+  </aside>
+  <main id="top">
+    <header class="topbar"><span class="breadcrumb">采购工作台 <span>/</span> 方案比选</span><span id="save-status" role="status">正在加载</span></header>
+    <section class="intro">
+      <div><div class="eyebrow">WATER & ENVIRONMENT</div><h1>环保设备采购比选</h1><p>统一成本口径，记录评分依据，让每次比选可复核。</p></div>
+      <div class="actions no-print"><button id="import-button" class="button">导入项目</button><button id="json-button" class="button">备份 JSON</button><button id="csv-button" class="button primary">导出比选表 <span aria-hidden="true">↗</span></button><button id="print-button" class="button" aria-label="打印或保存 PDF">打印</button></div>
+      <input type="file" id="import-file" accept=".json,application/json" hidden>
+    </section>
+    <div class="notice"><span class="notice-tag">示例说明</span><span>内置供应商、报价与性能均为虚构数据。实际比选前，请用同工况、同币种、同税费口径的已核对数据替换。</span></div>
+    <div id="errors" class="error-box" role="alert" hidden></div>
+
+    <section id="overview" class="section">
+      <div class="section-title"><div><span class="section-index">01</span><h2>比选总览</h2></div><span class="small-text">结果随输入更新</span></div>
+      <div class="metrics" id="metrics"></div>
+      <div class="results-grid">
+        <article class="panel cost-panel"><div class="panel-heading"><h3>评估期成本构成</h3><div class="legend"><span><i class="dot capex"></i>采购与交付</span><span><i class="dot opex"></i>运行费用</span></div></div><div id="cost-chart"></div><p class="panel-note">按所选年限直接累加；未计折现、税费差异、残值、融资及停机损失。</p></article>
+        <article class="panel ranking-panel"><div class="panel-heading"><h3>候选评分</h3><span class="chip">满分 100</span></div><div id="ranking"></div><p class="panel-note">仅通过技术、交期、质保筛选的方案参与排名。人工评分与权重会影响结果。</p></article>
+      </div>
+      <article class="panel details-panel"><div class="panel-heading"><h3>结果与待办</h3><span class="small-text">风险独立展示，不抵消硬性要求</span></div><div class="table-scroll"><table><thead><tr><th>供应商</th><th>筛选状态</th><th>年运行费用</th><th>平均吨水成本</th><th>风险</th><th>跟进人 / 应对</th></tr></thead><tbody id="result-rows"></tbody></table></div></article>
+    </section>
+
+    <section id="settings" class="section">
+      <div class="section-title"><div><span class="section-index">02</span><h2>项目与口径</h2></div><button class="text-button no-print" id="reset-button">重新载入演示</button></div>
+      <div class="panel"><div id="project-fields" class="field-grid"></div><div class="divider"></div><div class="subheading"><h3>评分权重</h3><p>不必凑足 100，系统会按总和归一化。全部为 0 时暂停计算。</p></div><div id="weight-fields" class="weights-grid"></div><div id="weights-summary" class="weights-summary"></div></div>
+    </section>
+
+    <section id="suppliers" class="section">
+      <div class="section-title"><div><span class="section-index">03</span><h2>供应商资料</h2><span class="small-text" id="supplier-count"></span></div><button class="button no-print" id="add-button">＋ 添加供应商</button></div>
+      <p class="section-description">把报价、运行参数、交付约束和核验依据放在同一处。技术状态由使用者核实后填写。</p>
+      <div class="supplier-grid" id="supplier-cards"></div>
+    </section>
+
+    <section id="method" class="section">
+      <div class="section-title"><div><span class="section-index">04</span><h2>计算方法</h2></div><span class="small-text">透明、可核对</span></div>
+      <div class="method-grid">
+        <article class="panel"><span class="method-number">01 / COST</span><h3>先统一比较范围</h3><p>年处理量 = 日处理量 × 年运行天数</p><p>年运行费 = 年处理量 ×（吨水电耗 × 电价 + 吨水药剂费）+ 年维护费</p><p>评估期总成本 = 设备报价 + 安装交付费 + 评估年限 × 年运行费</p><p>平均吨水成本 = 评估期总成本 ÷ 评估期累计处理量</p></article>
+        <article class="panel"><span class="method-number">02 / SCORE</span><h3>再比较合格候选</h3><p>成本分 = 合格候选最低总成本 ÷ 本方案总成本 × 100</p><p>交期分 = 合格候选最短交期 ÷ 本方案交期 × 100</p><p>总分 = 成本、质量、交期、服务四项得分的加权和。质量与服务由使用者按共同标准打分。</p><p>分数与候选集合有关；添加或删除候选会改变相对得分。并列结果保留相同名次。</p></article>
+        <article class="panel"><span class="method-number">03 / FOLLOW-UP</span><h3>让不确定性有负责人</h3><p>技术待核验、缺少依据、超出交期或质保不足时，方案保留成本测算，但不参与排名。</p><p>风险 = 概率（1–5）× 影响（1–5）。1–7 低、8–14 中、15–25 高，属于本工具的示例分档。</p><p>每个风险记录应对措施与跟进人。工具帮助整理判断依据，评分不自动构成采购批准或处理效果保证。</p></article>
+      </div>
+    </section>
+    <footer>EnviroProcure <span>环保设备采购比选 · 开源起步版 v0.1.0</span><a href="README.md">项目说明</a></footer>
+  </main>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <noscript>请启用浏览器 JavaScript 后使用本工具。</noscript>
+</body>
+</html>
